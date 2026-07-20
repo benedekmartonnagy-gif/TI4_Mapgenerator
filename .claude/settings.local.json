@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($env:Path += \";C:\\\\Program Files\\\\nodejs\"; Set-Location \"c:\\\\Users\\\\Benedek\\\\Desktop\\\\TI4_Mapgenerator\"; npx tsc -b; npx vitest run)"
+    ]
+  }
+}
