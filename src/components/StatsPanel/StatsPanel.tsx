@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { GeneratedMap } from '../../data/types';
 import { computeRingStats, type RingStats } from '../../engine/ringStats';
+import { buildMapString } from '../../engine/mapString';
 import './StatsPanel.css';
 
 interface StatsPanelProps {
@@ -30,10 +31,19 @@ export function StatsPanel({ map }: StatsPanelProps) {
     .sort((a, b) => (a.seat ?? 0) - (b.seat ?? 0));
 
   const [selectedSeat, setSelectedSeat] = useState(homeSlots[0]?.seat ?? 0);
+  const [copied, setCopied] = useState(false);
 
   const selectedHome = homeSlots.find((p) => p.seat === selectedSeat);
   const ring1 = selectedHome ? computeRingStats(selectedHome.coord, map.placements, 1) : null;
   const ring2 = selectedHome ? computeRingStats(selectedHome.coord, map.placements, 2) : null;
+
+  const mapString = buildMapString(map);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(mapString);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
 
   return (
     <div className="stats-panel">
@@ -74,6 +84,15 @@ export function StatsPanel({ map }: StatsPanelProps) {
           </tbody>
         </table>
       )}
+
+      <div className="map-string-section">
+        <h3>Map String</h3>
+        <p className="map-string-hint">Paste this into twilightwars.com to set up the game.</p>
+        <textarea className="map-string-text" readOnly value={mapString} onFocus={(e) => e.target.select()} />
+        <button type="button" className="map-string-copy" onClick={handleCopy}>
+          {copied ? 'Copied!' : 'Copy'}
+        </button>
+      </div>
     </div>
   );
 }

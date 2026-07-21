@@ -14,12 +14,13 @@ export function SetupScreen({ onGenerate, error }: SetupScreenProps) {
   const [playerCount, setPlayerCount] = useState<3 | 4 | 5 | 6>(6);
   const [pokEnabled, setPokEnabled] = useState(true);
   const [thundersEdgeEnabled, setThundersEdgeEnabled] = useState(false);
+  const [twilightwarsVariantEnabled, setTwilightwarsVariantEnabled] = useState(false);
 
   const handleGenerate = () => {
     const expansions: Expansion[] = ['base'];
     if (pokEnabled) expansions.push('pok');
     if (thundersEdgeEnabled && EXPANSION_REGISTRY.thundersEdge.available) expansions.push('thundersEdge');
-    onGenerate({ playerCount, expansions });
+    onGenerate({ playerCount, expansions, twilightwarsVariant: twilightwarsVariantEnabled });
   };
 
   return (
@@ -65,6 +66,22 @@ export function SetupScreen({ onGenerate, error }: SetupScreenProps) {
           />
           Thunder's Edge{!EXPANSION_REGISTRY.thundersEdge.available && ' (no data yet)'}
         </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Variant</legend>
+        <label className="expansion-toggle">
+          <input
+            type="checkbox"
+            checked={twilightwarsVariantEnabled}
+            onChange={(e) => setTwilightwarsVariantEnabled(e.target.checked)}
+          />
+          Twilightwars variant
+        </label>
+        <p className="variant-hint">
+          Uses Base + Prophecy of Kings tiles, excluding gravity rift tiles (not yet supported on twilightwars.com).
+          Can't be combined with the Prophecy of Kings or Thunder's Edge toggles above.
+        </p>
       </fieldset>
 
       {error && <p className="error">{error}</p>}

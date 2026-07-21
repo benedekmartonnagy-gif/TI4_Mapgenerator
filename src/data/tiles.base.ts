@@ -20,7 +20,6 @@ export const baseTiles: SystemTile[] = [
   {"id":"base-14","tileNumber":"14","expansion":"base","tileBack":null,"planets":[{"name":"Archon Ren","resources":2,"influence":3},{"name":"Archon Tau","resources":1,"influence":1}],"isHyperlane":false,"isMecatolRex":false,"isHomeSystem":true,"homeFactionName":"The Xxcha Kingdom"},
   {"id":"base-15","tileNumber":"15","expansion":"base","tileBack":null,"planets":[{"name":"Retillion","resources":2,"influence":3},{"name":"Shalloq","resources":2,"influence":1}],"isHyperlane":false,"isMecatolRex":false,"isHomeSystem":true,"homeFactionName":"The Yssaril Tribes"},
   {"id":"base-16","tileNumber":"16","expansion":"base","tileBack":null,"planets":[{"name":"Arretze","resources":2,"influence":0},{"name":"Hercant","resources":1,"influence":1},{"name":"Kamdorn","resources":0,"influence":1}],"isHyperlane":false,"isMecatolRex":false,"isHomeSystem":true,"homeFactionName":"The Emirates of Hacan"},
-  {"id":"base-17","tileNumber":"17","expansion":"base","tileBack":null,"planets":[],"isHyperlane":false,"isMecatolRex":false,"isHomeSystem":true,"wormhole":"delta","homeFactionName":"The Ghosts of Creuss"},
   {"id":"base-18","tileNumber":"18","expansion":"base","tileBack":null,"planets":[{"name":"Mecatol Rex","resources":1,"influence":6}],"isHyperlane":false,"isMecatolRex":true,"isHomeSystem":false,"isSpecial":true},
   {"id":"base-19","tileNumber":"19","expansion":"base","tileBack":"blue","planets":[{"name":"Wellon","resources":1,"influence":2,"trait":"industrial","techSpecialty":"cybernetic"}],"isHyperlane":false,"isMecatolRex":false,"isHomeSystem":false},
   {"id":"base-20","tileNumber":"20","expansion":"base","tileBack":"blue","planets":[{"name":"Vefut II","resources":2,"influence":2,"trait":"hazardous"}],"isHyperlane":false,"isMecatolRex":false,"isHomeSystem":false},
@@ -54,4 +53,5 @@ export const baseTiles: SystemTile[] = [
   {"id":"base-48","tileNumber":"48","expansion":"base","tileBack":"red","planets":[],"isHyperlane":false,"isMecatolRex":false,"isHomeSystem":false},
   {"id":"base-49","tileNumber":"49","expansion":"base","tileBack":"red","planets":[],"isHyperlane":false,"isMecatolRex":false,"isHomeSystem":false},
   {"id":"base-50","tileNumber":"50","expansion":"base","tileBack":"red","planets":[],"isHyperlane":false,"isMecatolRex":false,"isHomeSystem":false},
+  {"id":"base-51","tileNumber":"51","expansion":"base","tileBack":null,"planets":[{"name":"Creuss","resources":4,"influence":2}],"isHyperlane":false,"isMecatolRex":false,"isHomeSystem":true,"wormhole":"delta","homeFactionName":"The Ghosts of Creuss"},
 ];

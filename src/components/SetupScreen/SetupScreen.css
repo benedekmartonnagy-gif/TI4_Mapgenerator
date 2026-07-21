@@ -51,6 +51,13 @@
   cursor: pointer;
 }
 
+.variant-hint {
+  margin: 0.35rem 0 0;
+  color: #888;
+  font-size: 0.8rem;
+  text-align: left;
+}
+
 .generate-button {
   padding: 0.75rem 2rem;
   font-size: 1.1rem;

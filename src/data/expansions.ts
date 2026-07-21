@@ -10,6 +10,13 @@ export interface ExpansionEntry {
   available: boolean;
 }
 
+/** Official physical tile-number range per expansion, used to catch tiles filed under the wrong expansion. */
+export const EXPANSION_TILE_NUMBER_RANGES: Record<Expansion, { min: number; max: number }> = {
+  base: { min: 1, max: 51 },
+  pok: { min: 52, max: 91 },
+  thundersEdge: { min: 92, max: 128 },
+};
+
 export const EXPANSION_REGISTRY: Record<Expansion, ExpansionEntry> = {
   base: { label: 'Base Game', tiles: baseTiles, available: baseTiles.length > 0 },
   pok: { label: 'Prophecy of Kings', tiles: pokTiles, available: pokTiles.length > 0 },
@@ -21,10 +28,11 @@ export const EXPANSION_REGISTRY: Record<Expansion, ExpansionEntry> = {
 };
 
 /** Pool-eligible tiles (excludes Mecatol Rex, home systems, hyperlanes, and variant-only tiles) for the given expansions. */
-export function poolTilesFor(expansions: Expansion[]): SystemTile[] {
+export function poolTilesFor(expansions: Expansion[], options: { excludeGravityRift?: boolean } = {}): SystemTile[] {
   return expansions
     .flatMap((exp) => EXPANSION_REGISTRY[exp].tiles)
-    .filter((t) => !t.isMecatolRex && !t.isHomeSystem && !t.isHyperlane && !t.isSpecial);
+    .filter((t) => !t.isMecatolRex && !t.isHomeSystem && !t.isHyperlane && !t.isSpecial)
+    .filter((t) => !options.excludeGravityRift || t.anomaly !== 'gravityRift');
 }
 
 /** Thunder's Edge replaces the standard Mecatol Rex tile with its own variant (tile 112) when enabled. */

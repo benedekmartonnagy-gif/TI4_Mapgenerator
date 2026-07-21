@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { balancePlacements } from '../../engine/balance';
-import { computeSeatCompositeScores } from '../../engine/scoring';
+import { computeSeatCompositeScores, MAX_RELEVANT_DISTANCE } from '../../engine/scoring';
 import { generateMap } from '../../engine/generate';
 import { BOARD_LAYOUTS } from '../../data/layouts';
 import { buildShuffledPool } from '../../engine/pool';
@@ -94,6 +94,31 @@ describe('balancing optimizes the composite score, not raw resources+influence',
       if (original.role !== 'pool') continue;
       expect(byId.get(original.tile.id)).toEqual(original.coord);
     }
+  });
+});
+
+describe('Entropic Scar is a positive draw for the balancer', () => {
+  it('pulls a distant Entropic Scar tile into the lagging seat\'s range to close the composite-score gap', () => {
+    const home0: AxialCoord = { q: 0, r: 0 };
+    const home1: AxialCoord = { q: 10, r: 0 };
+    const leaderSlot: AxialCoord = { q: 1, r: 0 }; // seat0's ring 1: already valuable
+    const laggerSlot: AxialCoord = { q: 9, r: 0 }; // seat1's ring 1: worthless, the swap target
+    const farAway: AxialCoord = { q: 30, r: 30 }; // outside MAX_RELEVANT_DISTANCE of both homes
+
+    const placements: PlacedTile[] = [
+      home(home0, 0),
+      home(home1, 1),
+      pool(leaderSlot, { tileBack: 'blue', planets: [{ name: 'Leader', resources: 2, influence: 2 }] }),
+      pool(laggerSlot, { tileBack: 'blue', planets: [] }),
+      pool(farAway, { tileBack: 'red', anomaly: 'entropicScar', planets: [] }),
+    ];
+
+    expect(distance(home0, farAway)).toBeGreaterThan(MAX_RELEVANT_DISTANCE);
+
+    const result = balancePlacements(placements, [home0, home1]);
+    const entropicScarPlacement = result.find((p) => p.tile.anomaly === 'entropicScar')!;
+
+    expect(distance(home1, entropicScarPlacement.coord)).toBeLessThanOrEqual(MAX_RELEVANT_DISTANCE);
   });
 });
 

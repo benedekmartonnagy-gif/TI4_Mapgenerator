@@ -77,4 +77,6 @@ export interface GenerateConfig {
   playerCount: 3 | 4 | 5 | 6;
   expansions: Expansion[];
   seed?: number;
+  /** Base+PoK tiles only, excluding gravity rift anomalies (twilightwars.com doesn't support them yet). Mutually exclusive with enabling PoK or Thunder's Edge in `expansions`. */
+  twilightwarsVariant?: boolean;
 }

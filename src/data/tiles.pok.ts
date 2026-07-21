@@ -4,7 +4,6 @@ import type { SystemTile } from './types';
 // Cross-checked against the KeeganW/ti4 community map generator's tile dataset
 // (https://github.com/KeeganW/ti4) for tile-number-to-component accuracy.
 export const pokTiles: SystemTile[] = [
-  {"id":"pok-51","tileNumber":"51","expansion":"pok","tileBack":null,"planets":[{"name":"Creuss","resources":4,"influence":2}],"isHyperlane":false,"isMecatolRex":false,"isHomeSystem":true,"wormhole":"delta"},
   {"id":"pok-52","tileNumber":"52","expansion":"pok","tileBack":null,"planets":[{"name":"Ixth","resources":3,"influence":5}],"isHyperlane":false,"isMecatolRex":false,"isHomeSystem":true,"homeFactionName":"The Mahact Gene-sorcerers"},
   {"id":"pok-53","tileNumber":"53","expansion":"pok","tileBack":null,"planets":[{"name":"Arcturus","resources":4,"influence":4}],"isHyperlane":false,"isMecatolRex":false,"isHomeSystem":true,"homeFactionName":"The Nomad"},
   {"id":"pok-54","tileNumber":"54","expansion":"pok","tileBack":null,"planets":[{"name":"Acheron","resources":4,"influence":0}],"isHyperlane":false,"isMecatolRex":false,"isHomeSystem":true,"homeFactionName":"The Vuil'raith Cabal"},

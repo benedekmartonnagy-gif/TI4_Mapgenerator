@@ -12,8 +12,13 @@ import { shuffle } from './rng';
  * looked harmless. Where a selected tile ends up is a separate, later
  * concern for the placement step.
  */
-export function buildShuffledPool(expansions: Expansion[], requiredCount: number, rng: () => number): SystemTile[] {
-  const available = poolTilesFor(expansions);
+export function buildShuffledPool(
+  expansions: Expansion[],
+  requiredCount: number,
+  rng: () => number,
+  options: { excludeGravityRift?: boolean } = {},
+): SystemTile[] {
+  const available = poolTilesFor(expansions, options);
   if (available.length < requiredCount) {
     throw new Error(
       `Not enough pool tiles for the selected expansions: need ${requiredCount}, have ${available.length}. Enable more expansions.`,

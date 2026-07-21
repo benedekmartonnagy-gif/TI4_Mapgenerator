@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { baseTiles } from '../../data/tiles.base';
 import { pokTiles } from '../../data/tiles.pok';
 import { thundersEdgeTiles } from '../../data/tiles.thundersEdge';
+import { EXPANSION_TILE_NUMBER_RANGES } from '../../data/expansions';
 import type { SystemTile } from '../../data/types';
 
 function checkIntegrity(tiles: SystemTile[], label: string) {
@@ -25,19 +26,23 @@ function checkIntegrity(tiles: SystemTile[], label: string) {
       }
     });
 
-    it('sets homeFactionName only when relevant, and home tiles have it (except the Creuss wormhole-only entries)', () => {
+    it('sets homeFactionName on every home system tile', () => {
       for (const tile of tiles) {
-        if (tile.isHomeSystem && !tile.homeFactionName) {
-          // The base game's tile 17 and PoK's tile 51 both represent the
-          // Ghosts of Creuss home system; only one carries the race label
-          // in source data. Anything else missing a name is a real gap.
-          expect(tile.wormhole).toBe('delta');
-        }
+        if (tile.isHomeSystem) expect(tile.homeFactionName).toBeTruthy();
       }
     });
 
     it('has exactly one Mecatol Rex tile at most', () => {
       expect(tiles.filter((t) => t.isMecatolRex).length).toBeLessThanOrEqual(1);
+    });
+
+    it("every tile's number falls within its expansion's official range", () => {
+      const { min, max } = EXPANSION_TILE_NUMBER_RANGES[tiles[0]?.expansion ?? 'base'];
+      for (const tile of tiles) {
+        const n = Number(tile.tileNumber);
+        expect(n, `${tile.id} (tile ${tile.tileNumber}) out of range [${min}, ${max}] for ${tile.expansion}`).toBeGreaterThanOrEqual(min);
+        expect(n, `${tile.id} (tile ${tile.tileNumber}) out of range [${min}, ${max}] for ${tile.expansion}`).toBeLessThanOrEqual(max);
+      }
     });
   });
 }
@@ -56,8 +61,8 @@ describe('base tile data counts', () => {
 });
 
 describe('PoK tile data counts', () => {
-  it('has 8 home systems, 17 blue, and 7 red tiles', () => {
-    expect(pokTiles.filter((t) => t.isHomeSystem).length).toBe(8);
+  it('has 7 home systems, 17 blue, and 7 red tiles', () => {
+    expect(pokTiles.filter((t) => t.isHomeSystem).length).toBe(7);
     expect(pokTiles.filter((t) => t.tileBack === 'blue').length).toBe(17);
     expect(pokTiles.filter((t) => t.tileBack === 'red').length).toBe(7);
   });

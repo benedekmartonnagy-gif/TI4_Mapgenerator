@@ -3,12 +3,6 @@ import type { PlacedTile } from '../../data/types';
 import { hexCorners } from '../../engine/axial';
 
 const WORMHOLE_SYMBOL: Record<string, string> = { alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ' };
-const ANOMALY_LABEL: Record<string, string> = {
-  nebula: 'Nebula',
-  supernova: 'Supernova',
-  asteroidField: 'Asteroid Field',
-  gravityRift: 'Gravity Rift',
-};
 const TECH_ABBR: Record<string, string> = { biotic: 'B', propulsion: 'P', cybernetic: 'C', warfare: 'W' };
 
 // Font size / spacing tuned per planet count so multi-planet stacks stay
@@ -78,16 +72,6 @@ export function HexTile({ placement, center, hexSize }: HexTileProps) {
             #{tile.tileNumber}
           </text>
 
-          {tile.planets.length === 0 && (
-            <>
-              {tile.anomaly && (
-                <text textAnchor="middle" dy="0.1em" fontSize={hexSize * 0.2} fill="#fff">
-                  {ANOMALY_LABEL[tile.anomaly]}
-                </text>
-              )}
-            </>
-          )}
-
           {tile.planets.map((planet, i) => {
             const count = tile.planets.length;
             const layout = PLANET_TEXT_LAYOUT[count] ?? PLANET_TEXT_LAYOUT[3];
@@ -110,12 +94,6 @@ export function HexTile({ placement, center, hexSize }: HexTileProps) {
           {tile.wormhole && (
             <text textAnchor="middle" x={hexSize * 0.55} y={-hexSize * 0.45} fontSize={hexSize * 0.32} fill="#ffe08a">
               {WORMHOLE_SYMBOL[tile.wormhole]}
-            </text>
-          )}
-
-          {tile.anomaly && tile.planets.length > 0 && (
-            <text textAnchor="middle" x={-hexSize * 0.55} y={hexSize * 0.55} fontSize={hexSize * 0.15} fill="#ffb0b0">
-              {ANOMALY_LABEL[tile.anomaly]}
             </text>
           )}
         </>

@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { generateMap } from '../../engine/generate';
 import { BOARD_LAYOUTS } from '../../data/layouts';
 import { neighbors, key } from '../../engine/axial';
+import { computeRingStats } from '../../engine/ringStats';
+import { MIN_RING1_INFLUENCE, MIN_RING1_RESOURCES } from '../../engine/ring1Floor';
+import { MAX_TOTAL_SPREAD } from '../../engine/totalSpread';
 import type { PlacedTile } from '../../data/types';
 
 const PLAYER_COUNTS = [3, 4, 5, 6] as const;
@@ -63,20 +66,87 @@ describe('generateMap', () => {
         // The balancer optimizes a richer composite score now (tile-back mix, tech
         // diversity, legendary bonus, exclusive-planet shape, positional fairness —
         // see scoring.ts), not pure raw resources+influence equality, so raw R+I
-        // spread is looser than it used to be. Threshold retuned empirically: 25
-        // clears 90-100% of sampled seeds across all player counts (measured), well
-        // above the 80% bar this test enforces.
+        // spread is looser than it used to be. Threshold retuned empirically after
+        // adding enforceRing1Floors and enforceTotalSpread (both run after this raw
+        // metric is computed, and can trade a little raw-R+I spread for their own
+        // rules): 32 clears 85-100% of sampled seeds across all player counts
+        // (measured: 20/20, 20/20, 17/20, 18/20), above the 80% bar this test enforces.
         let withinTolerance = 0;
         for (const seed of SEEDS) {
           const map = generateMap({ playerCount, expansions: ['base', 'pok'], seed });
           const totals = Object.values(map.perPlayerTotals).map((t) => t.resources + t.influence);
           const spread = Math.max(...totals) - Math.min(...totals);
-          if (spread <= 25) withinTolerance++;
+          if (spread <= 32) withinTolerance++;
         }
         expect(withinTolerance).toBeGreaterThanOrEqual(SEEDS.length * 0.8);
       });
+
+      it('meets the Ring 1 resource/influence floor for the vast majority of seats', () => {
+        // enforceRing1Floors (ring1Floor.ts) falls back to best-effort when a seed is
+        // genuinely infeasible, matching this codebase's constraint-handling pattern
+        // elsewhere. Measured 100% compliance (280/280) across all 20 sampled seeds for
+        // every player count with base+pok, so 0.98 leaves a little headroom for rarer
+        // expansion combos/seeds without masking a real regression.
+        let compliant = 0;
+        let total = 0;
+        for (const seed of SEEDS) {
+          const map = generateMap({ playerCount, expansions: ['base', 'pok'], seed });
+          const homeSlots = map.placements.filter((p) => p.role === 'home');
+          for (const homeSlot of homeSlots) {
+            total++;
+            const stats = computeRingStats(homeSlot.coord, map.placements, 1);
+            if (stats.resources >= MIN_RING1_RESOURCES && stats.influence >= MIN_RING1_INFLUENCE) compliant++;
+          }
+        }
+        expect(compliant).toBeGreaterThanOrEqual(total * 0.98);
+      });
+
+      it('keeps every seat within MAX_TOTAL_SPREAD of every other seat\'s Ring1+Ring2 total for the vast majority of seeds', () => {
+        // enforceTotalSpread (totalSpread.ts) falls back to best-effort when a seed is
+        // genuinely infeasible under its Ring-1-floor protection, same pattern as every
+        // other constraint here. Measured 100% compliance (80/80) across all 20 sampled
+        // seeds for every player count with base+pok, so 0.98 leaves a little headroom
+        // for rarer expansion combos/seeds without masking a real regression.
+        let compliant = 0;
+        for (const seed of SEEDS) {
+          const map = generateMap({ playerCount, expansions: ['base', 'pok'], seed });
+          const homeSlots = map.placements.filter((p) => p.role === 'home');
+          const totals = homeSlots.map((h) => {
+            const r1 = computeRingStats(h.coord, map.placements, 1);
+            const r2 = computeRingStats(h.coord, map.placements, 2);
+            return r1.resources + r1.influence + r2.resources + r2.influence;
+          });
+          const spread = Math.max(...totals) - Math.min(...totals);
+          if (spread <= MAX_TOTAL_SPREAD) compliant++;
+        }
+        expect(compliant).toBeGreaterThanOrEqual(SEEDS.length * 0.98);
+      });
+
+      it('twilightwars variant never places a gravity rift tile', () => {
+        for (const seed of SEEDS.slice(0, 5)) {
+          const map = generateMap({ playerCount, expansions: ['base'], twilightwarsVariant: true, seed });
+          expect(map.placements.some((p) => p.tile.anomaly === 'gravityRift')).toBe(false);
+        }
+      });
     });
   }
+
+  describe('twilightwars variant', () => {
+    it('generates successfully with just base selected', () => {
+      expect(() =>
+        generateMap({ playerCount: 6, expansions: ['base'], twilightwarsVariant: true, seed: 1 }),
+      ).not.toThrow();
+    });
+
+    it('rejects being combined with PoK or Thunder\'s Edge', () => {
+      expect(() =>
+        generateMap({ playerCount: 6, expansions: ['base', 'pok'], twilightwarsVariant: true, seed: 1 }),
+      ).toThrow(/invalid selection/i);
+      expect(() =>
+        generateMap({ playerCount: 6, expansions: ['base', 'thundersEdge'], twilightwarsVariant: true, seed: 1 }),
+      ).toThrow(/invalid selection/i);
+    });
+  });
 
   it('throws a clear error when the selected expansions do not have enough pool tiles', () => {
     expect(() => generateMap({ playerCount: 6, expansions: ['base'], seed: 1 })).not.toThrow();

@@ -9,6 +9,7 @@ const COLOR_WEIGHT = 1.5;
 // distinct type found is worth more than the 4th. Indexed by distinct count (0-4).
 const TECH_DIVERSITY_VALUE = [0, 5, 9, 12, 14];
 const LEGENDARY_BONUS = 5;
+const ENTROPIC_SCAR_BONUS = 8;
 const SHAPE_PLANET_WEIGHT = 1.5;
 const POSITIONAL_STRENGTH = 0.6;
 
@@ -92,6 +93,15 @@ export function legendaryScore(inRange: TileInRange[]): number {
   return total;
 }
 
+/** Bonus per Entropic Scar anomaly nearby — makes it a net positive for the seat, not just a red-tile penalty. */
+export function entropicScarScore(inRange: TileInRange[]): number {
+  let total = 0;
+  for (const t of inRange) {
+    if (t.tile.anomaly === 'entropicScar') total += ENTROPIC_SCAR_BONUS * t.weight;
+  }
+  return total;
+}
+
 /** True if `homeCoord` is strictly the single closest home to `tileCoord` among all seats. */
 export function isExclusiveToSeat(tileCoord: AxialCoord, homeCoord: AxialCoord, otherHomeCoords: AxialCoord[]): boolean {
   const myDistance = distance(tileCoord, homeCoord);
@@ -119,9 +129,17 @@ export interface BalanceWeights {
   wTech?: number;
   wLegendary?: number;
   wShape?: number;
+  wEntropicScar?: number;
 }
 
-const DEFAULT_WEIGHTS: Required<BalanceWeights> = { wRI: 1, wColor: 1, wTech: 1, wLegendary: 1, wShape: 1 };
+const DEFAULT_WEIGHTS: Required<BalanceWeights> = {
+  wRI: 1,
+  wColor: 1,
+  wTech: 1,
+  wLegendary: 1,
+  wShape: 1,
+  wEntropicScar: 1,
+};
 
 /** Composite score for a single seat, given its home coord and every other seat's home coord. */
 export function computeSingleSeatScore(
@@ -137,7 +155,8 @@ export function computeSingleSeatScore(
     w.wColor * colorScore(inRange) +
     w.wTech * techDiversityScore(inRange) +
     w.wLegendary * legendaryScore(inRange) +
-    w.wShape * shapeScore(inRange, homeCoord, otherHomeCoords)
+    w.wShape * shapeScore(inRange, homeCoord, otherHomeCoords) +
+    w.wEntropicScar * entropicScarScore(inRange)
   );
 }
 

@@ -6,6 +6,7 @@ import {
   techDiversityScore,
   legendaryScore,
   shapeScore,
+  entropicScarScore,
   isExclusiveToSeat,
   computeSeatCompositeScores,
   computePositionalFactors,
@@ -144,6 +145,39 @@ describe('legendaryScore', () => {
   });
 });
 
+describe('entropicScarScore', () => {
+  it('adds a bonus per Entropic Scar tile in range, scaling with distance weight', () => {
+    const close = [home(ORIGIN, 0), pool({ q: 1, r: 0 }, { tileBack: 'red', anomaly: 'entropicScar', planets: [] })]; // weight 3
+    const far = [home(ORIGIN, 0), pool({ q: 3, r: 0 }, { tileBack: 'red', anomaly: 'entropicScar', planets: [] })]; // weight 1
+
+    const closeScore = entropicScarScore(tilesInRange(ORIGIN, close));
+    const farScore = entropicScarScore(tilesInRange(ORIGIN, far));
+
+    expect(closeScore).toBeGreaterThan(farScore);
+    expect(closeScore).toBeGreaterThan(0);
+  });
+
+  it('is 0 when no in-range tile has an Entropic Scar, and sums across multiple such tiles', () => {
+    const none = [home(ORIGIN, 0), pool({ q: 1, r: 0 }, { tileBack: 'red', anomaly: 'nebula', planets: [] })];
+    const two = [
+      home(ORIGIN, 0),
+      pool({ q: 1, r: 0 }, { tileBack: 'red', anomaly: 'entropicScar', planets: [] }),
+      pool({ q: 1, r: -1 }, { tileBack: 'red', anomaly: 'entropicScar', planets: [] }),
+    ];
+
+    expect(entropicScarScore(tilesInRange(ORIGIN, none))).toBe(0);
+    const oneScore = entropicScarScore(tilesInRange(ORIGIN, [home(ORIGIN, 0), two[1]]));
+    expect(entropicScarScore(tilesInRange(ORIGIN, two))).toBe(oneScore * 2);
+  });
+
+  it('nets positive even after the existing red-tile-back color penalty', () => {
+    const placements = [home(ORIGIN, 0), pool({ q: 1, r: 0 }, { tileBack: 'red', anomaly: 'entropicScar', planets: [] })];
+    const inRange = tilesInRange(ORIGIN, placements);
+    const net = entropicScarScore(inRange) + colorScore(inRange);
+    expect(net).toBeGreaterThan(0);
+  });
+});
+
 describe('shapeScore / isExclusiveToSeat', () => {
   it('counts a planet only when this home is strictly the closest among all homes', () => {
     const seatAHome: AxialCoord = { q: -3, r: 0 };
@@ -198,15 +232,29 @@ describe('computeSeatCompositeScores with zeroed weights', () => {
       home({ q: 2, r: 0 }, 1),
       pool({ q: -1, r: 0 }, { tileBack: 'blue', planets: [{ name: 'A', resources: 1, influence: 1 }] }),
     ];
-    const onlyRI = computeSeatCompositeScores(placements, { wColor: 0, wTech: 0, wLegendary: 0, wShape: 0 });
+    const onlyRI = computeSeatCompositeScores(placements, { wColor: 0, wTech: 0, wLegendary: 0, wShape: 0, wEntropicScar: 0 });
     const seat0RI = onlyRI.get(0)!;
 
-    const onlyColor = computeSeatCompositeScores(placements, { wRI: 0, wTech: 0, wLegendary: 0, wShape: 0 });
+    const onlyColor = computeSeatCompositeScores(placements, { wRI: 0, wTech: 0, wLegendary: 0, wShape: 0, wEntropicScar: 0 });
     const seat0Color = onlyColor.get(0)!;
 
     expect(seat0RI).toBeGreaterThan(0);
     expect(seat0Color).toBeGreaterThan(0);
     expect(seat0RI).not.toBe(seat0Color);
+  });
+
+  it('isolates wEntropicScar to match entropicScarScore directly', () => {
+    const placements = [
+      home({ q: -2, r: 0 }, 0),
+      home({ q: 2, r: 0 }, 1),
+      pool({ q: -1, r: 0 }, { tileBack: 'red', anomaly: 'entropicScar', planets: [] }),
+    ];
+    const onlyEntropicScar = computeSeatCompositeScores(placements, { wRI: 0, wColor: 0, wTech: 0, wLegendary: 0, wShape: 0 });
+    const seat0Score = onlyEntropicScar.get(0)!;
+    const expected = entropicScarScore(tilesInRange({ q: -2, r: 0 }, placements));
+
+    expect(seat0Score).toBe(expected);
+    expect(seat0Score).toBeGreaterThan(0);
   });
 });
 
